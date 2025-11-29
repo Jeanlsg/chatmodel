@@ -6,6 +6,7 @@ create table public.triage_reports (
   -- Patient Info
   patient_name text,
   patient_age integer,
+  patient_number text,
   
   -- Triage Info
   complaint text,
