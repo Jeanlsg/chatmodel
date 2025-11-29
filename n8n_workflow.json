@@ -85,8 +85,54 @@
         },
         {
             "parameters": {
-                "method": "POST",
-                "url": "https://n8n.jeanlsg.site/webhook/receive-triage-json"
+                "method": "PATCH",
+                "url": "https://asksguycdiygwqkzjenn.supabase.co/rest/v1/triages?patient_phone=eq.{{$fromAI(\"patient_phone\")}}",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "apikey",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFza3NndXljZGl5Z3dxa3pqZW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzODYxNjcsImV4cCI6MjA3OTk2MjE2N30.iNOoS-wChmigQmojOEd7y3OE1TApWzQ96LYT1H1tJMU"
+                        },
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFza3NndXljZGl5Z3dxa3pqZW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzODYxNjcsImV4cCI6MjA3OTk2MjE2N30.iNOoS-wChmigQmojOEd7y3OE1TApWzQ96LYT1H1tJMU"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        },
+                        {
+                            "name": "Prefer",
+                            "value": "return=minimal"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "patient_name",
+                            "value": "={{$fromAI(\"patient_name\")}}"
+                        },
+                        {
+                            "name": "patient_age",
+                            "value": "={{$fromAI(\"patient_age\")}}"
+                        },
+                        {
+                            "name": "complaint",
+                            "value": "={{$fromAI(\"complaint\")}}"
+                        },
+                        {
+                            "name": "priority",
+                            "value": "={{$fromAI(\"priority\")}}"
+                        },
+                        {
+                            "name": "status",
+                            "value": "in_progress"
+                        }
+                    ]
+                }
             },
             "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
             "typeVersion": 1,
