@@ -34,7 +34,7 @@ export const sendMessageToN8n = async (message, userId) => {
 };
 
 export const sendMessageToTriagem = async (message, userId) => {
-    const WEBHOOK_URL = 'https://n8n.jeanlsg.site/webhook/triagem';
+    const WEBHOOK_URL = 'https://n8n.jeanlsg.site/webhook/PIBITI';
 
     if (!userId) {
         console.error('userId is missing');
