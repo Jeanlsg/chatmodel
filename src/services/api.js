@@ -2,6 +2,11 @@ export const sendMessageToN8n = async (message, userId) => {
     // TODO: Replace with your actual n8n webhook URL
     const WEBHOOK_URL = 'https://n8n.jeanlsg.site/webhook/PIBITI';
 
+    if (!userId) {
+        console.error('userId is missing');
+        throw new Error('userId is required');
+    }
+
     try {
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
