@@ -54,7 +54,7 @@
         {
             "parameters": {
                 "respondWith": "json",
-                "responseBody": "={{ JSON.stringify({ text: $json.output, sender: 'bot', timestamp: $now }) }}",
+                "responseBody": "={{ JSON.stringify({ messages: $json.messages, sender: 'bot', timestamp: $now }) }}",
                 "options": {}
             },
             "id": "1d733ccf-f3a5-4340-9e18-8132a0da00f4",
@@ -62,8 +62,8 @@
             "type": "n8n-nodes-base.respondToWebhook",
             "typeVersion": 1,
             "position": [
-                1360,
-                -256
+                880,
+                -144
             ]
         },
         {
@@ -99,57 +99,7 @@
         },
         {
             "parameters": {
-                "options": {}
-            },
-            "type": "n8n-nodes-base.splitInBatches",
-            "typeVersion": 3,
-            "position": [
-                864,
-                -160
-            ],
-            "id": "04c9a476-a7c0-4e03-9931-d2f417ed522e",
-            "name": "Loop Over Items"
-        },
-        {
-            "parameters": {},
-            "type": "n8n-nodes-base.noOp",
-            "name": "Replace Me",
-            "typeVersion": 1,
-            "position": [
-                1280,
-                -32
-            ],
-            "id": "e8933e1b-3595-4966-ac8c-0d50c0dfb4df"
-        },
-        {
-            "parameters": {
-                "respondWith": "json",
-                "responseBody": "={{ JSON.stringify({ text: $json.output, sender: 'bot', timestamp: $now }) }}",
-                "options": {}
-            },
-            "id": "4a5a5c23-0e67-46a9-8003-d1082e32b1bd",
-            "name": "Respond to Webhook1",
-            "type": "n8n-nodes-base.respondToWebhook",
-            "typeVersion": 1,
-            "position": [
-                1088,
-                -64
-            ]
-        },
-        {
-            "parameters": {},
-            "type": "n8n-nodes-base.noOp",
-            "typeVersion": 1,
-            "position": [
-                1104,
-                -208
-            ],
-            "id": "6036260f-093e-408e-a21d-cec58ecce2e3",
-            "name": "No Operation, do nothing"
-        },
-        {
-            "parameters": {
-                "jsCode": "// Recebe o texto de entrada (tenta 'output' ou 'message' ou retorna vazio)\nconst texto = $input.first().json.output || $input.first().json.message || \"\";\n\n// 1. Remove tags <br> globais antes de dividir\nlet textoBase = texto.replace(/<br\\s*\\/?>/gi, '');\n\n// 2. Divide o texto pelo delimitador \\\\ (dupla barra invertida)\n// Nota: No JS do n8n, precisamos escapar as barras para o regex funcionar corretamente\nconst itens = textoBase.split('\\\\\\\\');\n\n// Processa cada mensagem individualmente\nreturn itens\n  .map(item => item.trim())\n  .filter(item => item !== \"\")\n  .map(item => {\n    let processado = item;\n\n    // --- LIMPEZA DE ASPAS ---\n    // Remove todas as aspas duplas (\") do texto\n    processado = processado.replace(/\"/g, '');\n\n    // --- FORMATAÇÃO DE TEXTO ---\n    // Substitui ** por * (ajuste de negrito para WhatsApp se necessário)\n    processado = processado.replace(/\\*\\*/g, '*');\n\n    // --- TRATAMENTO DE QUEBRAS DE LINHA ---\n    // Transforma a string literal \"\\n\" em um caractere de nova linha real\n    // O split/join é mais seguro que regex para substituição global de literais\n    processado = processado.split('\\\\n').join('\\n');\n    \n    // Opcional: Remover quebras de linha duplas excessivas ou com espaços\n    processado = processado.replace(/\\n\\n/g, '\\n');\n    processado = processado.replace(/\\n \\n/g, '\\n');\n\n    return {\n      json: {\n        item: processado\n      }\n    };\n  });"
+                "jsCode": "// Recebe o texto de entrada (tenta 'output' ou 'message' ou retorna vazio)\nconst texto = $input.first().json.output || $input.first().json.message || \"\";\n\n// 1. Remove tags <br> globais antes de dividir\nlet textoBase = texto.replace(/<br\\s*\\/?>/gi, '');\n\n// 2. Divide o texto pelo delimitador \\\\ (dupla barra invertida)\n// Nota: No JS do n8n, precisamos escapar as barras para o regex funcionar corretamente\nconst itens = textoBase.split('\\\\\\\\');\n\n// Processa cada mensagem individualmente e retorna um array de strings\nconst messages = itens\n  .map(item => item.trim())\n  .filter(item => item !== \"\")\n  .map(item => {\n    let processado = item;\n\n    // --- LIMPEZA DE ASPAS ---\n    processado = processado.replace(/\"/g, '');\n\n    // --- FORMATAÇÃO DE TEXTO ---\n    processado = processado.replace(/\\*\\*/g, '*');\n\n    // --- TRATAMENTO DE QUEBRAS DE LINHA ---\n    processado = processado.split('\\\\n').join('\\n');\n    \n    processado = processado.replace(/\\n\\n/g, '\\n');\n    processado = processado.replace(/\\n \\n/g, '\\n');\n\n    return processado;\n  });\n\nreturn {\n  json: {\n    messages: messages\n  }\n};"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
@@ -217,47 +167,7 @@
                 ]
             ]
         },
-        "Loop Over Items": {
-            "main": [
-                [
-                    {
-                        "node": "No Operation, do nothing",
-                        "type": "main",
-                        "index": 0
-                    }
-                ],
-                [
-                    {
-                        "node": "Respond to Webhook1",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Replace Me": {
-            "main": [
-                [
-                    {
-                        "node": "Loop Over Items",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Respond to Webhook1": {
-            "main": [
-                [
-                    {
-                        "node": "Replace Me",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "No Operation, do nothing": {
+        "Quebrar em linhas": {
             "main": [
                 [
                     {
@@ -267,56 +177,9 @@
                     }
                 ]
             ]
-        },
-        "Quebrar em linhas": {
-            "main": [
-                [
-                    {
-                        "node": "Loop Over Items",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
         }
     },
-    "pinData": {
-        "Webhook": [
-            {
-                "headers": {
-                    "connection": "keep-alive",
-                    "host": "n8n.jeanlsg.site",
-                    "x-forwarded-scheme": "https",
-                    "x-forwarded-proto": "https",
-                    "x-forwarded-for": "45.188.47.105",
-                    "x-real-ip": "45.188.47.105",
-                    "content-length": "79",
-                    "sec-ch-ua-platform": "\"Windows\"",
-                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
-                    "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
-                    "content-type": "application/json",
-                    "sec-ch-ua-mobile": "?0",
-                    "accept": "*/*",
-                    "origin": "https://chatmodel-zxzi.vercel.app",
-                    "sec-fetch-site": "cross-site",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-dest": "empty",
-                    "referer": "https://chatmodel-zxzi.vercel.app/",
-                    "accept-encoding": "gzip, deflate, br, zstd",
-                    "accept-language": "pt-BR,pt;q=0.9,en-CA;q=0.8,en;q=0.7,en-US;q=0.6"
-                },
-                "params": {},
-                "query": {},
-                "body": {
-                    "message": "oi",
-                    "userId": "558788465406",
-                    "timestamp": "2025-11-29T02:55:28.002Z"
-                },
-                "webhookUrl": "https://n8n.jeanlsg.site/webhook/PIBITI",
-                "executionMode": "production"
-            }
-        ]
-    },
+    "pinData": {},
     "meta": {
         "templateCredsSetupCompleted": true,
         "instanceId": "070806e0f4f59f81ad03d5b3d900c93dae693d158d932f8ec51c0a7fd2b30138"

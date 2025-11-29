@@ -115,7 +115,26 @@ const TriagemWindow = () => {
         try {
             const response = await sendMessageToTriagem(newMessageText, phoneNumber);
 
-            if (response && response.text) {
+            // Handle multi-message response (new format)
+            if (response && response.messages && Array.isArray(response.messages)) {
+                const newBotMessages = response.messages.map((msgText, index) => ({
+                    id: Date.now() + 1 + index,
+                    text: msgText,
+                    sender: 'bot',
+                    timestamp: new Date()
+                }));
+
+                setMessages(prev => [...prev, ...newBotMessages]);
+
+                // Save all bot messages
+                if (triageId) {
+                    for (const msg of newBotMessages) {
+                        await saveMessage(triageId, 'bot', msg.text);
+                    }
+                }
+            }
+            // Handle single message response (legacy format)
+            else if (response && response.text) {
                 const botMessage = {
                     id: Date.now() + 1,
                     text: response.text,
