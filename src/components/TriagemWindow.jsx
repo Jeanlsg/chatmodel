@@ -84,6 +84,29 @@ const TriagemWindow = () => {
         }
     };
 
+    const saveTriageReport = async (data) => {
+        try {
+            const { error } = await supabase
+                .from('triage_reports')
+                .insert([{
+                    patient_name: data.paciente,
+                    classification_color: data.classificacao,
+                    patient_phone: phoneNumber,
+                    created_at: new Date(),
+                    status: 'completed',
+                    // Default values for fields not provided by webhook yet
+                    complaint: 'Triagem realizada via chat',
+                    patient_age: 0, // Placeholder
+                    hanseniase_active: false
+                }]);
+
+            if (error) throw error;
+            console.log('Triage report saved successfully');
+        } catch (error) {
+            console.error('Error saving triage report:', error);
+        }
+    };
+
     const handlePhoneSubmit = (e) => {
         e.preventDefault();
         if (phoneNumber.trim().length < 8) return;
@@ -147,6 +170,11 @@ const TriagemWindow = () => {
                 if (triageId) {
                     saveMessage(triageId, 'bot', response.text);
                 }
+            }
+
+            // Check for triage completion data
+            if (response && response.dados_confirmados) {
+                await saveTriageReport(response.dados_confirmados);
             }
         } catch (error) {
             console.error("Failed to send message", error);
