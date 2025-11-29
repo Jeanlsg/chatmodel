@@ -1,4 +1,4 @@
-export const sendMessageToN8n = async (message) => {
+export const sendMessageToN8n = async (message, userId) => {
     // TODO: Replace with your actual n8n webhook URL
     const WEBHOOK_URL = 'https://n8n.jeanlsg.site/webhook/PIBITI';
 
@@ -10,6 +10,7 @@ export const sendMessageToN8n = async (message) => {
             },
             body: JSON.stringify({
                 message,
+                userId,
                 timestamp: new Date().toISOString()
             }),
         });

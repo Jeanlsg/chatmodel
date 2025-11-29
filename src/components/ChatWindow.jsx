@@ -8,6 +8,8 @@ const ChatWindow = () => {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState(localStorage.getItem('chat_phone_number') || '');
+    const [isPhoneSubmitted, setIsPhoneSubmitted] = useState(!!localStorage.getItem('chat_phone_number'));
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -17,6 +19,13 @@ const ChatWindow = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    const handlePhoneSubmit = (e) => {
+        e.preventDefault();
+        if (phoneNumber.trim().length < 8) return; // Basic validation
+        localStorage.setItem('chat_phone_number', phoneNumber);
+        setIsPhoneSubmitted(true);
+    };
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -34,7 +43,7 @@ const ChatWindow = () => {
         setIsLoading(true);
 
         try {
-            const response = await sendMessageToN8n(newMessage.text);
+            const response = await sendMessageToN8n(newMessage.text, phoneNumber);
 
             // Assuming the n8n workflow returns { text: "response message" }
             if (response && response.text) {
@@ -59,6 +68,38 @@ const ChatWindow = () => {
         }
     };
 
+    if (!isPhoneSubmitted) {
+        return (
+            <div className="flex flex-col h-[600px] w-full max-w-md bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--glass-border)] shadow-2xl overflow-hidden items-center justify-center p-8">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg mb-6">
+                    <User size={32} className="text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome</h2>
+                <p className="text-[var(--text-secondary)] text-center mb-8">Please enter your phone number to start chatting.</p>
+
+                <form onSubmit={handlePhoneSubmit} className="w-full space-y-4">
+                    <div>
+                        <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            placeholder="Phone Number (e.g., 5511999999999)"
+                            className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all placeholder:text-slate-500"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={!phoneNumber.trim()}
+                        className="w-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-colors shadow-lg shadow-indigo-500/20 font-medium"
+                    >
+                        Start Chatting
+                    </button>
+                </form>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-[600px] w-full max-w-md bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--glass-border)] shadow-2xl overflow-hidden">
             {/* Header */}
@@ -70,7 +111,7 @@ const ChatWindow = () => {
                     <h1 className="font-semibold text-lg text-white">AI Assistant</h1>
                     <p className="text-xs text-[var(--text-secondary)] flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        Online
+                        Online • {phoneNumber}
                     </p>
                 </div>
             </div>
@@ -88,8 +129,8 @@ const ChatWindow = () => {
                         </div>
 
                         <div className={`max-w-[80%] p-3 rounded-2xl ${msg.sender === 'user'
-                                ? 'bg-[var(--primary)] text-white rounded-tr-none'
-                                : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-slate-700'
+                            ? 'bg-[var(--primary)] text-white rounded-tr-none'
+                            : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-slate-700'
                             } ${msg.isError ? 'bg-red-500/20 border-red-500/50 text-red-200' : ''}`}>
                             <p className="text-sm leading-relaxed">{msg.text}</p>
                             <span className="text-[10px] opacity-50 mt-1 block text-right">
