@@ -23,7 +23,7 @@ const Login = () => {
 
             if (error) throw error;
 
-            navigate('/');
+            navigate('/dashboard');
         } catch (err) {
             setError(err.message);
         } finally {

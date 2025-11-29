@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { supabase } from './supabaseClient';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 import TriagemWindow from './components/TriagemWindow';
 
 // Protected Route Component
@@ -40,23 +41,18 @@ function App() {
     return (
         <Router>
             <Routes>
+                <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route
-                    path="/"
+                    path="/dashboard"
                     element={
                         <ProtectedRoute>
                             <Dashboard />
                         </ProtectedRoute>
                     }
                 />
-                <Route
-                    path="/triagem"
-                    element={
-                        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-                            <TriagemWindow />
-                        </div>
-                    }
-                />
+                {/* Optional: Keep /triagem as an alias or redirect to / */}
+                <Route path="/triagem" element={<Navigate to="/" replace />} />
             </Routes>
         </Router>
     );

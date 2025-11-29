@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Stethoscope } from 'lucide-react';
 import { sendMessageToTriagem } from '../services/api';
+import { supabase } from '../supabaseClient';
 
 const TriagemWindow = () => {
     const [messages, setMessages] = useState([
@@ -10,6 +11,7 @@ const TriagemWindow = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState(localStorage.getItem('chat_phone_number') || '');
     const [isPhoneSubmitted, setIsPhoneSubmitted] = useState(!!localStorage.getItem('chat_phone_number'));
+    const [triageId, setTriageId] = useState(null);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -19,6 +21,68 @@ const TriagemWindow = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Initialize or fetch triage session when phone is submitted
+    useEffect(() => {
+        if (isPhoneSubmitted && phoneNumber) {
+            initializeTriageSession();
+        }
+    }, [isPhoneSubmitted, phoneNumber]);
+
+    const initializeTriageSession = async () => {
+        try {
+            // Check for existing active triage
+            const { data: existingTriages, error: fetchError } = await supabase
+                .from('triages')
+                .select('id, status')
+                .eq('patient_phone', phoneNumber)
+                .in('status', ['pending', 'in_progress'])
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (fetchError) throw fetchError;
+
+            if (existingTriages && existingTriages.length > 0) {
+                setTriageId(existingTriages[0].id);
+                // Optionally fetch previous messages here if we want to restore history
+                // fetchMessages(existingTriages[0].id);
+            } else {
+                // Create new triage
+                const { data: newTriage, error: createError } = await supabase
+                    .from('triages')
+                    .insert([{
+                        patient_phone: phoneNumber,
+                        status: 'pending',
+                        patient_name: 'Visitante' // Default until we extract name
+                    }])
+                    .select()
+                    .single();
+
+                if (createError) throw createError;
+                setTriageId(newTriage.id);
+
+                // Save initial greeting
+                await saveMessage(newTriage.id, 'bot', messages[0].text);
+            }
+        } catch (error) {
+            console.error('Error initializing triage session:', error);
+        }
+    };
+
+    const saveMessage = async (tId, sender, content) => {
+        if (!tId) return;
+        try {
+            await supabase
+                .from('triage_messages')
+                .insert([{
+                    triage_id: tId,
+                    sender,
+                    content
+                }]);
+        } catch (error) {
+            console.error('Error saving message:', error);
+        }
+    };
 
     const handlePhoneSubmit = (e) => {
         e.preventDefault();
@@ -31,9 +95,10 @@ const TriagemWindow = () => {
         e.preventDefault();
         if (!inputValue.trim()) return;
 
+        const newMessageText = inputValue;
         const newMessage = {
             id: Date.now(),
-            text: inputValue,
+            text: newMessageText,
             sender: 'user',
             timestamp: new Date()
         };
@@ -42,16 +107,27 @@ const TriagemWindow = () => {
         setInputValue('');
         setIsLoading(true);
 
+        // Save user message
+        if (triageId) {
+            saveMessage(triageId, 'user', newMessageText);
+        }
+
         try {
-            const response = await sendMessageToTriagem(newMessage.text, phoneNumber);
+            const response = await sendMessageToTriagem(newMessageText, phoneNumber);
 
             if (response && response.text) {
-                setMessages(prev => [...prev, {
+                const botMessage = {
                     id: Date.now() + 1,
                     text: response.text,
                     sender: 'bot',
                     timestamp: new Date()
-                }]);
+                };
+                setMessages(prev => [...prev, botMessage]);
+
+                // Save bot response
+                if (triageId) {
+                    saveMessage(triageId, 'bot', response.text);
+                }
             }
         } catch (error) {
             console.error("Failed to send message", error);
