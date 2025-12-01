@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Triagem Natural - Assistente Virtual</title>
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <style>
+    :root {
+      --chat--color--primary: #10b981;
+      --chat--color--primary-shade-50: #059669;
+      --chat--color--primary--shade-100: #047857;
+      --chat--color--secondary: #10b981;
+      --chat--color-secondary-shade-50: #059669;
+      --chat--color-white: #0f172a;
+      --chat--color-light: #1e293b;
+      --chat--color-light-shade-50: #334155;
+      --chat--color-light-shade-100: #475569;
+      --chat--color-medium: #64748b;
+      --chat--color-dark: #f1f5f9;
+      --chat--color-disabled: #475569;
+      --chat--color-typing: #10b981;
+
+      --chat--spacing: 1rem;
+      --chat--border-radius: 0.75rem;
+      --chat--transition-duration: 0.15s;
+
+      --chat--header--background: #0f172a;
+      --chat--header--color: #f1f5f9;
+
+      --chat--message--bot--background: #1e293b;
+      --chat--message--bot--color: #f1f5f9;
+      --chat--message--user--background: #10b981;
+      --chat--message--user--color: #ffffff;
+
+      --chat--toggle--background: #10b981;
+      --chat--toggle--color: #ffffff;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0f172a;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+    /* Header Styles */
+    .page-header {
+      height: 64px;
+      background-color: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      justify-content: space-between;
+      position: relative;
+      z-index: 20;
+      box-sizing: border-box;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #94a3b8;
+      text-decoration: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .back-btn:hover {
+      color: #ffffff;
+      background-color: #1e293b;
+    }
+
+    .divider {
+      height: 24px;
+      width: 1px;
+      background-color: #334155;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .title-group p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: #34d399;
+    }
+
+    /* Chat Container */
+    #n8n-chat {
+      width: 100%;
+      height: calc(100% - 64px);
+      /* Subtract header height */
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Force chat elements to fill */
+    .chat-window {
+      height: 100% !important;
+      width: 100% !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <a href="/" class="back-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 19-7-7 7-7" />
+          <path d="M19 12H5" />
+        </svg>
+        <span>Voltar</span>
+      </a>
+      <div class="divider"></div>
+      <div class="title-group">
+        <h1>Triagem Natural</h1>
+        <p>Assistente Virtual Inteligente</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Chat Target -->
+  <div id="n8n-chat"></div>
+
+  <!-- N8n Chat Script -->
+  <script type="module">
+    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+    // Get patient name from URL
+    const params = new URLSearchParams(window.location.search);
+    const patientName = params.get('name') || 'Paciente';
+    const firstName = patientName.split(' ')[0];
+
+    createChat({
+      webhookUrl: 'https://n8n.jeanlsg.site/webhook/c0ae9eed-2c4a-4628-8da1-8c96ce89af36/chat',
+      target: '#n8n-chat',
+      mode: 'fullscreen',
+      chatInputKey: 'chatInput',
+      chatSessionKey: 'sessionId',
+      metadata: {
+        patientName: patientName
+      },
+      showWelcomeScreen: false,
+      initialMessages: [
+        `Olá ${firstName}! Sou a assistente virtual. Descreva o que você está sentindo.`
+      ],
+      i18n: {
+        en: {
+          title: 'Triagem Natural',
+          subtitle: 'Descreva seus sintomas',
+          getStarted: 'Iniciar',
+          inputPlaceholder: 'Digite sua mensagem...',
+        }
+      }
+    });
+
+    // JSON Cleanup Logic (adapted for vanilla JS)
+    setInterval(() => {
+      const container = document.getElementById('n8n-chat');
+      if (!container) return;
+
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+
+      const nodesToProcess = [];
+      let node;
+      while (node = walker.nextNode()) {
+        const text = node.textContent || '';
+        if (text.includes('"messages"') && text.includes('[')) {
+          nodesToProcess.push(node);
+        }
+      }
+
+      nodesToProcess.forEach((textNode) => {
+        const textContent = textNode.textContent || '';
+        try {
+          const parsed = JSON.parse(textContent);
+          if (parsed.messages && Array.isArray(parsed.messages) && parsed.messages.length > 0) {
+            textNode.textContent = parsed.messages.join('\n');
+          }
+        } catch (e) {
+          const match = textContent.match(/"messages":\s*\[\s*"([^"]+)"\s*\]/);
+          if (match && match[1]) {
+            textNode.textContent = match[1];
+          }
+        }
+      });
+    }, 100);
+  </script>
+</body>
+
+</html>

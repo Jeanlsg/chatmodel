@@ -2,9 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { ArrowLeft, Home } from 'lucide-react';
 import '@n8n/chat/style.css';
 import { createChat } from '@n8n/chat';
-import './N8nChatPage.css'; // Using the new isolated CSS
+import './N8nChatPage.css';
 
-const N8nChat = ({ setCurrentView, patientName }) => {
+const N8nChatPage = ({ setCurrentView, patientName }) => {
     const chatContainerRef = useRef(null);
     const chatInstanceRef = useRef(null);
 
@@ -14,10 +14,23 @@ const N8nChat = ({ setCurrentView, patientName }) => {
             // Initialize n8n chat
             chatInstanceRef.current = createChat({
                 webhookUrl: 'https://n8n.jeanlsg.site/webhook/c0ae9eed-2c4a-4628-8da1-8c96ce89af36/chat',
+                mode: 'fullscreen',
                 chatInputKey: 'chatInput',
                 chatSessionKey: 'sessionId',
                 metadata: {
                     patientName: patientName || 'Paciente'
+                },
+                showWelcomeScreen: false,
+                initialMessages: [
+                    'Olá! Sou a assistente virtual. Como posso ajudar você hoje?'
+                ],
+                i18n: {
+                    en: {
+                        title: 'Triagem Natural',
+                        subtitle: 'Descreva seus sintomas',
+                        getStarted: 'Iniciar',
+                        inputPlaceholder: 'Digite sua mensagem...',
+                    }
                 }
             });
 
@@ -119,4 +132,4 @@ const N8nChat = ({ setCurrentView, patientName }) => {
     );
 };
 
-export default N8nChat;
+export default N8nChatPage;
