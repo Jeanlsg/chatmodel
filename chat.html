@@ -125,6 +125,18 @@
       max-height: none !important;
       border-radius: 0 !important;
     }
+
+    /* Force input text color */
+    .chat-input,
+    textarea,
+    input[type="text"] {
+      color: #ffffff !important;
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+      color: #94a3b8 !important;
+    }
   </style>
 </head>
 
@@ -138,7 +150,7 @@
           <path d="m12 19-7-7 7-7" />
           <path d="M19 12H5" />
         </svg>
-        <span>Voltar</span>
+        <span>Voltar</span>        
       </a>
       <div class="divider"></div>
       <div class="title-group">
@@ -195,29 +207,46 @@
         false
       );
 
-      const nodesToProcess = [];
       let node;
       while (node = walker.nextNode()) {
-        const text = node.textContent || '';
-        if (text.includes('"messages"') && text.includes('[')) {
-          nodesToProcess.push(node);
+        const text = node.textContent;
+        // Check for the specific JSON pattern from n8n
+        if (text && (text.includes('{"messages":') || text.includes('"messages":'))) {
+          try {
+            // Attempt 1: Try parsing the whole text
+            const parsed = JSON.parse(text);
+            if (parsed.messages && Array.isArray(parsed.messages)) {
+              node.textContent = parsed.messages.join('\n');
+              continue;
+            }
+          } catch (e) {
+            // Attempt 2: Try to extract JSON object
+            try {
+              const start = text.indexOf('{');
+              const end = text.lastIndexOf('}');
+              if (start !== -1 && end !== -1 && end > start) {
+                const jsonStr = text.substring(start, end + 1);
+                const parsed = JSON.parse(jsonStr);
+                if (parsed.messages && Array.isArray(parsed.messages)) {
+                  node.textContent = parsed.messages.join('\n');
+                  continue;
+                }
+              }
+            } catch (e2) {
+              // Attempt 3: Regex fallback (handles newlines and escaped chars better)
+              const match = text.match(/"messages":\s*\[\s*"([\s\S]*?)"\s*\]/);
+              if (match && match[1]) {
+                // Unescape JSON string if needed (simple replace for common escapes)
+                let cleanText = match[1]
+                  .replace(/\\n/g, '\n')
+                  .replace(/\\"/g, '"')
+                  .replace(/\\\\/g, '\\');
+                node.textContent = cleanText;
+              }
+            }
+          }
         }
       }
-
-      nodesToProcess.forEach((textNode) => {
-        const textContent = textNode.textContent || '';
-        try {
-          const parsed = JSON.parse(textContent);
-          if (parsed.messages && Array.isArray(parsed.messages) && parsed.messages.length > 0) {
-            textNode.textContent = parsed.messages.join('\n');
-          }
-        } catch (e) {
-          const match = textContent.match(/"messages":\s*\[\s*"([^"]+)"\s*\]/);
-          if (match && match[1]) {
-            textNode.textContent = match[1];
-          }
-        }
-      });
     }, 100);
   </script>
 </body>
