@@ -1,0 +1,101 @@
+/* Custom n8n Chat Theme - Dark Mode */
+.n8n-chat-container {
+  --chat--color--primary: #10b981;
+  --chat--color--primary-shade-50: #059669;
+  --chat--color--primary--shade-100: #047857;
+  --chat--color--secondary: #10b981;
+  --chat--color-secondary-shade-50: #059669;
+  --chat--color-white: #0f172a;
+  --chat--color-light: #1e293b;
+  --chat--color-light-shade-50: #334155;
+  --chat--color-light-shade-100: #475569;
+  --chat--color-medium: #64748b;
+  --chat--color-dark: #f1f5f9;
+  --chat--color-disabled: #475569;
+  --chat--color-typing: #10b981;
+
+  --chat--spacing: 1rem;
+  --chat--border-radius: 0.75rem;
+  --chat--transition-duration: 0.15s;
+
+  --chat--window--width: 100%;
+  --chat--window--height: 100%;
+
+  --chat--header-height: auto;
+  --chat--header--padding: var(--chat--spacing);
+  --chat--header--background: #0f172a;
+  --chat--header--color: #f1f5f9;
+  --chat--header--border-top: none;
+  --chat--header--border-bottom: 1px solid #334155;
+  --chat--heading--font-size: 1.5em;
+  --chat--subtitle--font-size: 0.875rem;
+  --chat--subtitle--line-height: 1.5;
+
+  --chat--textarea--height: 50px;
+
+  --chat--message--font-size: 0.95rem;
+  --chat--message--padding: var(--chat--spacing);
+  --chat--message--border-radius: var(--chat--border-radius);
+  --chat--message-line-height: 1.6;
+  --chat--message--bot--background: #1e293b;
+  --chat--message--bot--color: #f1f5f9;
+  --chat--message--bot--border: 1px solid #334155;
+  --chat--message--user--background: #10b981;
+  --chat--message--user--color: #ffffff;
+  --chat--message--user--border: none;
+  --chat--message--pre--background: rgba(0, 0, 0, 0.3);
+
+  --chat--toggle--background: #10b981;
+  --chat--toggle--hover--background: #059669;
+  --chat--toggle--active--background: #047857;
+  --chat--toggle--color: #ffffff;
+  --chat--toggle--size: 64px;
+}
+
+/* Force chat to stay within container and at the top */
+.n8n-chat-container {
+  position: relative !important;
+}
+
+.n8n-chat-container>* {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+/* Hide any floating toggle button */
+.n8n-chat-container button[class*="toggle"],
+.n8n-chat-container [class*="ChatToggle"] {
+  display: none !important;
+}
+
+/* Ensure dark background for the entire chat */
+.n8n-chat-container * {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1e293b;
+}
+
+.n8n-chat-container *::-webkit-scrollbar {
+  width: 8px;
+}
+
+.n8n-chat-container *::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.n8n-chat-container *::-webkit-scrollbar-thumb {
+  background-color: #475569;
+  border-radius: 4px;
+}
+
+.n8n-chat-container *::-webkit-scrollbar-thumb:hover {
+  background-color: #64748b;
+}

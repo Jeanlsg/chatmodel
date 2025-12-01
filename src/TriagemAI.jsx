@@ -24,6 +24,8 @@ import {
   Bot
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+import SelectionView from './components/SelectionView';
+import N8nChat from './components/N8nChat';
 
 // --- HELPER FUNCTIONS & DATA ---
 
@@ -618,7 +620,7 @@ const ProfessionalView = ({ setCurrentView }) => {
 
 export default function TriagemAI() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // States: 'landing', 'patient', 'chat', 'professional'
+  // States: 'landing', 'patient', 'selection', 'chat', 'natural_chat', 'professional'
   const [currentView, setCurrentView] = useState('landing');
 
   // Patient Data State
@@ -631,7 +633,7 @@ export default function TriagemAI() {
   const handleStartTriage = (e) => {
     e.preventDefault();
     if (patientName && patientCpf && patientPhone) {
-      setCurrentView('chat');
+      setCurrentView('selection');
     } else {
       alert("Por favor, preencha todos os campos.");
     }
@@ -705,12 +707,19 @@ export default function TriagemAI() {
           setPatientPhone={setPatientPhone}
           handleStartTriage={handleStartTriage}
         />
+      ) : currentView === 'selection' ? (
+        <SelectionView setCurrentView={setCurrentView} />
       ) : currentView === 'chat' ? (
         <ChatView
           setCurrentView={setCurrentView}
           patientName={patientName}
           patientCpf={patientCpf}
           patientPhone={patientPhone}
+        />
+      ) : currentView === 'natural_chat' ? (
+        <N8nChat
+          setCurrentView={setCurrentView}
+          patientName={patientName}
         />
       ) : currentView === 'professional' ? (
         <ProfessionalView setCurrentView={setCurrentView} />
